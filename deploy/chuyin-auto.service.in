@@ -12,7 +12,7 @@ ExecStart=@APP_DIR@/.venv/bin/python @APP_DIR@/main.py
 Environment=PYTHONUNBUFFERED=1
 Nice=10
 
-# oneshot 用 TimeoutStartSec 限制整次任务（RuntimeMaxSec 对 oneshot 无效）
+# oneshot 用 TimeoutStartSec 限制整次任务时长
 TimeoutStartSec=600
 
 # 最小权限
