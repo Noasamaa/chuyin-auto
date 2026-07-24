@@ -48,7 +48,7 @@ ssh root@your-server 'bash /tmp/chuyin-auto/deploy/install.sh'
 |----|-----|
 | 安装目录 | `/opt/chuyin-auto`（仅允许 `/opt/chuyin-auto*` 或 `/srv/chuyin-auto*`） |
 | 运行用户 | `chuyin-auto`（nologin 系统用户） |
-| 定时 | 每天 09:15 |
+| 定时 | 每天 **北京时间 09:15**（`Asia/Shanghai`） |
 | 单次时限 | systemd `RuntimeMaxSec=600` + 进程内 `job_max_seconds≤540` |
 | 配置权限 | `640 root:chuyin-auto` |
 | 日志目录 | `700`，日志文件 `600` + 轮转 |
