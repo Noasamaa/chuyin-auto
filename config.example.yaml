@@ -1,0 +1,30 @@
+# 复制为 config.yaml 后填写账号
+# cp config.example.yaml config.yaml
+# chmod 600 config.yaml
+
+# 站点域名（不要写 https://；禁止空字符串）
+domain: www.yngal.com
+
+# 单次请求超时秒数（1~60，socket 空闲超时）
+timeout: 20
+
+# 寻宝最大次数（1~50，与 job 时限联动校验）
+hunt_max: 20
+
+# 每次寻宝间隔秒数（0~30）
+hunt_interval: 1.5
+
+# 整次任务总时限（秒，30~540；cron/systemd 均生效；须 ≤ systemd RuntimeMaxSec）
+job_max_seconds: 540
+
+# 必须是 YAML 布尔 true/false，不要写字符串 "false"
+do_checkin: true
+do_hunt: true
+
+# 账号列表（最多 20；必须是 list）
+accounts:
+  - email: "your@email.com"
+    password: "your_plain_password"
+    # enabled: true
+    # do_checkin: true
+    # do_hunt: true

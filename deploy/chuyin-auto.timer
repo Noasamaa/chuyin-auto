@@ -1,0 +1,13 @@
+[Unit]
+Description=每日运行 初音的青葱 自动任务
+
+[Timer]
+# 每天 09:15 跑一次（服务器本地时区）
+OnCalendar=*-*-* 09:15:00
+# 开机错过则补跑
+Persistent=true
+RandomizedDelaySec=120
+Unit=chuyin-auto.service
+
+[Install]
+WantedBy=timers.target
