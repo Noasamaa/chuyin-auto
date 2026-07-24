@@ -385,7 +385,8 @@ class TestInstallScriptSafety(unittest.TestCase):
         self.assertNotIn('find "$APP_DIR" -type f -exec chmod 644', script)
         unit = (ROOT / "deploy" / "chuyin-auto.service.in").read_text()
         self.assertIn("User=@RUN_USER@", unit)
-        self.assertIn("RuntimeMaxSec=600", unit)
+        self.assertIn("TimeoutStartSec=600", unit)
+        self.assertNotIn("RuntimeMaxSec", unit)
         self.assertIn("@APP_DIR@", unit)
 
 

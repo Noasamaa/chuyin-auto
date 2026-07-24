@@ -231,12 +231,13 @@ normalize_code_perms() {
 
 restore_runtime_ownership() {
   # 二次安装后确保运行时可写目录仍属运行用户
+  # （root 手动 dry-run 会留下 root 属主日志，service 用户写不了）
   if [[ -e "$APP_DIR/logs" ]]; then
     is_symlink "$APP_DIR/logs" && die "logs 不能是符号链接: $APP_DIR/logs"
     mkdir -p "$APP_DIR/logs"
     chown -R "$RUN_USER":"$RUN_GROUP" "$APP_DIR/logs"
     chmod 700 "$APP_DIR/logs"
-    # 日志文件保持可追加
+    find "$APP_DIR/logs" -type f -exec chown "$RUN_USER":"$RUN_GROUP" {} + 2>/dev/null || true
     find "$APP_DIR/logs" -type f -exec chmod 600 {} + 2>/dev/null || true
   fi
   if [[ -e "$APP_DIR/.venv" ]]; then

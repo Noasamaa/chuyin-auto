@@ -800,16 +800,6 @@ def parse_config(cfg: dict) -> dict[str, Any]:
 
 
 def setup_logging(log_dir: Path, verbose: bool) -> None:
-    log_dir.mkdir(parents=True, exist_ok=True)
-    try:
-        os.chmod(log_dir, 0o700)
-    except OSError:
-        pass
-
-    _prune_old_logs(log_dir, LOG_RETENTION_DAYS)
-
-    day = datetime.now().strftime("%Y-%m-%d")
-    logfile = log_dir / f"run-{day}.log"
     level = logging.DEBUG if verbose else logging.INFO
     fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
     root = logging.getLogger()
@@ -820,18 +810,31 @@ def setup_logging(log_dir: Path, verbose: bool) -> None:
     sh.setFormatter(fmt)
     root.addHandler(sh)
 
-    fh = RotatingFileHandler(
-        logfile,
-        maxBytes=LOG_MAX_BYTES,
-        backupCount=LOG_BACKUP_COUNT,
-        encoding="utf-8",
-    )
-    fh.setFormatter(fmt)
-    root.addHandler(fh)
+    # 文件日志：目录/文件不可写时不崩溃（常见于 root 先 dry-run 留下 root 属主日志）
     try:
-        os.chmod(logfile, 0o600)
-    except OSError:
-        pass
+        log_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            os.chmod(log_dir, 0o700)
+        except OSError:
+            pass
+        _prune_old_logs(log_dir, LOG_RETENTION_DAYS)
+        day = datetime.now().strftime("%Y-%m-%d")
+        logfile = log_dir / f"run-{day}.log"
+        fh = RotatingFileHandler(
+            logfile,
+            maxBytes=LOG_MAX_BYTES,
+            backupCount=LOG_BACKUP_COUNT,
+            encoding="utf-8",
+        )
+        fh.setFormatter(fmt)
+        root.addHandler(fh)
+        try:
+            os.chmod(logfile, 0o600)
+        except OSError:
+            pass
+    except OSError as e:
+        # 仅 stdout，保证 service 用户仍可跑
+        root.warning("无法写文件日志 %s: %s（继续只用 stdout/journald）", log_dir, e)
 
 
 def _prune_old_logs(log_dir: Path, keep_days: int) -> None:

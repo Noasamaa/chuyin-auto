@@ -12,9 +12,8 @@ ExecStart=@APP_DIR@/.venv/bin/python @APP_DIR@/main.py
 Environment=PYTHONUNBUFFERED=1
 Nice=10
 
-# 整体运行时限（防挂死/慢速响应占坑）
+# oneshot 用 TimeoutStartSec 限制整次任务（RuntimeMaxSec 对 oneshot 无效）
 TimeoutStartSec=600
-RuntimeMaxSec=600
 
 # 最小权限
 NoNewPrivileges=true
@@ -22,7 +21,6 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=@APP_DIR@/logs
-# 配置只读给运行用户
 ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectControlGroups=true
