@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # 在服务器上以 root 执行:
-#   sudo bash deploy/install.sh
+#   bash deploy/install.sh
 # 可选:
-#   sudo APP_DIR=/opt/chuyin-auto RUN_USER=chuyin-auto bash deploy/install.sh
+#   APP_DIR=/opt/chuyin-auto RUN_USER=chuyin-auto bash deploy/install.sh
 set -euo pipefail
 
 # 安装标记：目标目录必须带此「普通文件」才允许 rsync --delete
@@ -21,7 +21,25 @@ info() { echo "[*] $*"; }
 
 require_root() {
   if [[ "${EUID}" -ne 0 ]]; then
-    die "请用 root 执行: sudo bash deploy/install.sh"
+    die "请用 root 执行: bash deploy/install.sh（或 sudo bash deploy/install.sh）"
+  fi
+}
+
+# 以运行用户执行命令（兼容无 sudo 的环境：runuser / su / sudo）
+run_as_user() {
+  local user="$1"
+  shift
+  if command -v runuser >/dev/null 2>&1; then
+    runuser -u "$user" -- "$@"
+  elif command -v su >/dev/null 2>&1; then
+    # su 的 -c 需要拼成一条 shell 命令
+    local cmd
+    printf -v cmd '%q ' "$@"
+    su -s /bin/bash "$user" -c "$cmd"
+  elif command -v sudo >/dev/null 2>&1; then
+    sudo -u "$user" -- "$@"
+  else
+    die "需要 runuser、su 或 sudo 之一，才能以用户 $user 安装依赖"
   fi
 }
 
@@ -143,7 +161,7 @@ ensure_safe_target() {
     fi
     if ! is_regular_file_nofollow "$m"; then
       die "目标目录非空且缺少合法 $MARKER_NAME（普通文件），拒绝 rsync --delete: $dir
-    若确认这是本项目目录，可: sudo rm -f $m && sudo touch $m && sudo chown root:root $m"
+    若确认这是本项目目录，可: rm -f $m && touch $m && chown root:root $m"
     fi
     # 已有 marker：必须 root 所有
     if [[ "$(marker_owner "$m")" != "root" ]]; then
@@ -288,8 +306,8 @@ setup_venv() {
   if [[ -d "$APP_DIR/.venv/bin" ]]; then
     find "$APP_DIR/.venv/bin" -type f -exec chmod u+rwX,g+rX,o-rwx {} + 2>/dev/null || true
   fi
-  sudo -u "$RUN_USER" "$APP_DIR/.venv/bin/pip" install -U pip
-  sudo -u "$RUN_USER" "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.txt"
+  run_as_user "$RUN_USER" "$APP_DIR/.venv/bin/pip" install -U pip
+  run_as_user "$RUN_USER" "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.txt"
 }
 
 render_units() {
@@ -332,7 +350,7 @@ main() {
   echo "手动跑一次: systemctl start chuyin-auto.service"
   echo "看日志:     journalctl -u chuyin-auto.service -n 100 --no-pager"
   echo "文件日志:   $APP_DIR/logs/  (mode 700, 文件 600)"
-  echo "改配置:     sudoedit $APP_DIR/config.yaml   # 640 root:$RUN_GROUP"
+  echo "改配置:     nano $APP_DIR/config.yaml   # 640 root:$RUN_GROUP"
   echo "改代码后:   请用 root 重新执行 install.sh（普通用户无法写 $APP_DIR）"
 }
 

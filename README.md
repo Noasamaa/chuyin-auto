@@ -39,6 +39,7 @@ scp -r 服务器小玩具/chuyin-auto root@your-server:/tmp/chuyin-auto
 
 # 3) 在服务器上 root 安装
 ssh root@your-server 'bash /tmp/chuyin-auto/deploy/install.sh'
+# 已是 root 时不要加 sudo（部分精简系统没有 sudo）
 ```
 
 默认：
@@ -55,7 +56,7 @@ ssh root@your-server 'bash /tmp/chuyin-auto/deploy/install.sh'
 自定义安装目录：
 
 ```bash
-sudo APP_DIR=/srv/chuyin-auto bash deploy/install.sh
+APP_DIR=/srv/chuyin-auto bash deploy/install.sh
 # unit 会按 APP_DIR 渲染，不再写死 /opt
 ```
 
@@ -72,8 +73,8 @@ sudo APP_DIR=/srv/chuyin-auto bash deploy/install.sh
 systemctl start chuyin-auto.service
 systemctl list-timers | grep chuyin
 journalctl -u chuyin-auto.service -n 100
-sudo tail -f /opt/chuyin-auto/logs/run-$(date +%F).log
-sudoedit /opt/chuyin-auto/config.yaml
+tail -f /opt/chuyin-auto/logs/run-$(date +%F).log
+nano /opt/chuyin-auto/config.yaml
 ```
 
 ### 纯 cron（不用 systemd）
